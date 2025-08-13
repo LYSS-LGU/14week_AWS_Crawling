@@ -21,7 +21,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 try:
     conn = pymysql.connect(
         user="lguplus7",
-        password=r"lg7p@ssw0rd~!",  # raw string으로 특수문자 처리
+        password=r"발급받은_DB_PASSWORD",  # raw string으로 특수문자 처리
         host="localhost",
         port=3306,
         database="cp_data",

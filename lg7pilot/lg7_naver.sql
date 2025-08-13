@@ -9,7 +9,7 @@ CREATE DATABASE IF NOT EXISTS cp_data;
 -- 만약 'lguplus7' 사용자가 이미 있다면 삭제하고 새로 만듭니다.
 DROP USER IF EXISTS 'lguplus7'@'localhost';
 -- 'lguplus7' 사용자를 생성하고 비밀번호를 설정합니다.
-CREATE USER 'lguplus7'@'localhost' IDENTIFIED BY 'lg7p@ssw0rd~!';
+CREATE USER 'lguplus7'@'localhost' IDENTIFIED BY '발급받은_DB_PASSWORD';
 -- 'lguplus7' 사용자에게 'cp_data' 데이터베이스의 모든 권한을 부여합니다.
 GRANT ALL PRIVILEGES ON cp_data.* TO 'lguplus7'@'localhost';
 -- 변경된 권한을 시스템에 즉시 적용합니다.

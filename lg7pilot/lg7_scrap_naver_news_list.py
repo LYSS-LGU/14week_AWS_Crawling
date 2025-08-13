@@ -7,9 +7,9 @@ import sys
 try:
     conn = mariadb.connect(
         user="lguplus7",
-        password="lg7p@ssw0rd~!",
+        password="발급받은_DB_PASSWORD",
         host="localhost",
-        port=3310,
+        port=3306,
         database="cp_data"
     )
 except mariadb.Error as e:
@@ -18,7 +18,7 @@ except mariadb.Error as e:
 cur = conn.cursor()
 
 scrap_url_list = []
-scrap_url_list.append(['https://news.hada.io/?page=',-1]) # 최신 뉴스 전체
+scrap_url_list.append(['https://news.naver.com/main/list.naver?mode=LSD&mid=sec&sid1=001&page=',-1]) # 최신 뉴스 전체
 
 # source_type - 0:네이버뉴스
 source_type = '0'
@@ -55,40 +55,32 @@ with sync_playwright() as p:
 
         content = main_page.content()
         soup = BeautifulSoup(content, "html.parser")
-        temp_soup = soup.select_one('article > div')
 
-        news_list = temp_soup.find_all('div', {'class': 'topic_row'})
+        temp_soup = soup.select_one('#main_content > div.list_body.newsflash_body > ul.type06_headline')
+        news_list = temp_soup.find_all('li' )
         if news_list.__len__() == 0:
             print('[debug] no news found...')
             continue # 사실상 retry --> chromium 말고 firefox가 잘됨
 
         duplicate_cnt=0
         for news in news_list:
-
-            source_url = f'https://news.hada.io/{news.select('div.topicdesc > a')[0].get('href')}'
+            source_url = news.select('a')[0].get('href')
             print( 'source_url : ', source_url)
 
-            comment_cnt = news.select_one('div.topicinfo > a.u')
-            if comment_cnt.text.strip().startswith('댓글 ') > 0:
-                comment_cnt = comment_cnt.text.replace('댓글 ','').replace('개', '')
-            else:
-                comment_cnt = '0'
-
-            cur.execute('select comment_cnt from gn_scrap_ready where source_type = ? and source_url = ? and status = "0"', (source_type, source_url))
+            cur.execute('select * from news_scrap_ready where source_type = ? and source_url = ?', (source_type, source_url))
             res = cur.fetchall()
             if res.__len__() > 0:
-                if res[0] == comment_cnt:
-                    print('[debug] DB에 source_url 존재 --> Skip')
-                    duplicate_cnt = duplicate_cnt + 1
-                    # 한 목록에서 중복 20개 이상인 경우 수집 중단
-                    if duplicate_yn == 'Y' and duplicate_cnt >= duplicate_max:
-                        print('[debug] duplicate_cnt >= 30 --> break')
-                        current_page = scrap_url_list[current_list_pos][1]
-                        break # 중복 20개 이상이면 for를 벗어나 다음 섹션으로 이동
-                    continue
+                print('[debug] DB에 source_url 존재 --> Skip')
+                duplicate_cnt = duplicate_cnt + 1
+                # 한 목록에서 중복 20개 이상인 경우 수집 중단
+                if duplicate_yn == 'Y' and duplicate_cnt >= duplicate_max:
+                    print('[debug] duplicate_cnt >= 30 --> break')
+                    current_page = scrap_url_list[current_list_pos][1]
+                    break # 중복 20개 이상이면 for를 벗어나 다음 섹션으로 이동
+                continue
 
-            insert_sql = "insert into gn_scrap_ready(source_type, source_url, comment_cnt, create_dt) values (?,?,?, now())"
-            cur.execute( insert_sql, (source_type, source_url, comment_cnt ) )
+            insert_sql = "insert into news_scrap_ready(source_type, source_url, create_dt) values (?,?, now())"
+            cur.execute( insert_sql, (source_type, source_url ) )
             conn.commit()
 
         if current_page == scrap_url_list[current_list_pos][1]:
