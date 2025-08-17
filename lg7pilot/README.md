@@ -1,5 +1,3 @@
-# C:\githome\14week_AWS\lg7pilot\README.md - 웹 크롤링 프로젝트
-
 ## 📋 프로젝트 개요
 이 프로젝트는 네이버뉴스와 GeekNews를 크롤링하여 데이터베이스에 저장하는 파이썬 기반 웹 크롤링 시스템입니다. Playwright와 BeautifulSoup을 활용하여 안정적인 크롤링을 수행하며, MariaDB를 통해 데이터를 체계적으로 관리합니다.
 
